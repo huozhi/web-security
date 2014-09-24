@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+<title>XSS Message Board</title>
+<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
+
+<style type="text/css">
+    
+.message-board {
+    position: relative;
+    left: 50%;
+    margin-left: -350px;
+    width: 700px;
+    resize: none;
+}
+.center {
+    position: relative;
+    width: 100%;
+    margin-top: 10px;
+    height: 300px;
+}
+.center > h4 {
+    text-align: center;
+}
+.title {
+    position: relative;
+    height: 100px;
+    text-align: center;
+    padding: 20px;
+}
+
+</style>
+</head>
+<body>
+<div class="title">
+    <h1>Message Board</h1>
+</div>
+<div class="center">
+    <textarea class="form-control message-board" rows="5" autofocus wrap="soft"></textarea>
+    <h4><input type="submit" class="btn btn-success" value="submit"></h4>
+</div>
+</body>
+</html>
