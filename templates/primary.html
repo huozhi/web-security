@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Injection Tutorial</title>
+<meta charset="utf-8">
+<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<style type="text/css">
+        
+.center {
+   position: relative;
+   text-align: center; 
+}
+.middle {
+    margin-top: 10%;
+    left: 50%;
+    width: 600px;
+    margin-left: -300px;
+}
+</style>
+</head>
+<body>
+
+<div class="center middle">
+    <h3> What I wanna show you is {{ data | safe }} </h3>
+
+    <div>
+      <h2><small>Tips: to inject script in this page is primary level,<br>
+        you should find the tags which could be close by hackers then<br>
+        inject your own script after it. Try it.
+      </small></h2>  
+    </div>
+</div>   
+</body>
+</html>
