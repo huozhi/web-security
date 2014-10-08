@@ -4,7 +4,7 @@
 
 - 什么都没过滤的情况
 
-    将` < `, ` > `过滤掉即可，或者已经被XSS过滤器过滤掉
+    将 `<`, `>` 过滤掉即可，或者已经被XSS过滤器过滤掉
 
 - 输出在`<script><script/>`之间的
 
@@ -18,4 +18,12 @@
 
 - 宽字节注入
     
-    修复相关过滤机制
+    修复相关过滤机制，对gbxxx，gbk编码要注意
+
+- DOM XSS
+    
+    过滤`\`, `"`, `<`, '>', 或者`innerHTML = encodeHTML([output])`
+
+- iframe
+
+    javascript:, vbscript:, data: 等都需要过滤
