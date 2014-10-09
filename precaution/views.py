@@ -4,5 +4,5 @@ def index(req):
     return render(req, 'index.html', locals())
 
 
-def primary_xss(req, data):
+def xss_script(req, data='INJECTION'):
     return render(req, 'primary.html', { 'data': data })

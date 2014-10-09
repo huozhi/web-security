@@ -18,7 +18,7 @@
     position: relative;
     width: 100%;
     margin-top: 10px;
-    height: 300px;
+    height: 200px;
 }
 .center > h4 {
     text-align: center;
@@ -30,6 +30,7 @@
     padding: 20px;
 }
 
+
 </style>
 </head>
 <body>
@@ -39,6 +40,19 @@
 <div class="center">
     <textarea class="form-control message-board" rows="5" autofocus wrap="soft"></textarea>
     <h4><input type="submit" class="btn btn-success" value="submit"></h4>
+</div>
+
+<div class="col-lg-6 col-lg-offset-3">
+    {% for message in messages %}
+    <div>
+        <span class="label label-info">date: {{ message.date }}</span>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                {{ message.content | safe }}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 </body>
 </html>

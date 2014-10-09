@@ -1,16 +1,27 @@
 from django.conf.urls import patterns, include, url
-
+from precaution import settings
 from django.contrib import admin
+from django.conf.urls.static import static
+
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'precaution.views.home', name='home'),
-    # url(r'^blog/', include('blog.urls')),
 
     # url(r'^admin/', include(admin.site.urls)),
     url(r'^$', 'precaution.views.index', name="index"),
-    url(r'^xss/$', 'message.views.home', name="message_home"),
-    url(r'^primary/$', 'precaution.views.primary_xss' ,name="primary_xss"),
-    url(r'^primary/(?P<data>.*)/', 'precaution.views.primary_xss' ,name="primary_xss"),
+    url(r'^board/$', 'message.views.board', name="message_board"),
+
+    url(r'^xss/script/$', 'precaution.views.xss_script' ,name="xss_script_default"),
+    url(r'^xss/script/(?P<data>.*)/', 'precaution.views.xss_script' ,name="xss_script"),
+
+) + static(
+
+    settings.STATIC_URL,
+    document_root=settings.STATIC_ROOT
+
+) + static(
+
+    settings.MEDIA_URL,
+    document_root=settings.MEDIA_ROOT
+
 )
