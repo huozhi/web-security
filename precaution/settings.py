@@ -40,6 +40,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    # project build-in apps
     'message',
 )
 
@@ -92,10 +94,10 @@ STATIC_URL = '/static/'
 
 MEDIA_URL = '/media/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL.replace('/', ''))
+STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 
-MEDIA_ROOT  = os.path.join(BASE_DIR, MEDIA_URL.replace('/', ''))
+MEDIA_ROOT  = os.path.join(BASE_DIR, 'static')
 
 STATICFILES_DIRS = (
-    STATIC_ROOT,
+    MEDIA_ROOT,
 )
