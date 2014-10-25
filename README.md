@@ -194,7 +194,7 @@
 - XSS 过滤器绕过
     
     `<img src=1 onerror=alert(1)>` 被和谐为 `<img src=1 onerror>`
-    改为 <script src=data:,alert(1)<!--
+    改为 `<script src=data:,alert(1)<!--`
 
 - 存储型 XSS
 

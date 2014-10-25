@@ -18,7 +18,7 @@ urlpatterns = patterns('',
     url(r'^xss/script/(?P<data>.*)/', 'precaution.views.xss_script' ,name='xss_script'),
 
     # tutorial
-    url(r'^tutorial/$', 'precaution.views.tutorial', name='tutorial'),
+    url(r'^xss/tutorial/$', 'precaution.views.tutorial', name='tutorial'),
     # url(r'^tutorial/get/', 'precaution.views.get_tutorial', name='get_tutorial'),
 ) + static(
 
