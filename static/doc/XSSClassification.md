@@ -175,3 +175,28 @@
     ```html
     <iframe srcdoc="&lt;script&gt;alert(1)&lt;/script&gt;"></iframe>
     ```
+- DOM XSS 路径
+
+    一些程序员会动态的加载json数据，同域的时候，可以使用ajax；而有时候，数据所在域和当前页面所在域又不一致。所以需要跨域请求。跨域请求数据的手段中，有一种叫做jsonp。
+
+    用代码表示的话，就是
+    `somescript.src="http://otherdomain.com/xx?jsonp=callback"`
+
+    某些时候，程序员会在调用外部数据的时候带上可控的参数。
+
+    `somescript.src="http://otherdomain.com/xx?jsonp=callback&id="+id;`
+
+    如果这个id我们可控，将可能带来XSS问题
+
+    1. `script src="完全可控"` ,这种就简单了，直接将地址换为我们的JS地址
+    2. `script src="/path/xxx/[路径可控]/1.js"`
+
+- XSS 过滤器绕过
+    
+    `<img src=1 onerror=alert(1)>` 被和谐为 `<img src=1 onerror>`
+    改为 <script src=data:,alert(1)<!--
+
+- 存储型 XSS
+
+    可以套现的各种XSS技巧，HTML标签
+    [HTML5 Security Cheatsheet](http://html5sec.org/)

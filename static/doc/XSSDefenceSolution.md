@@ -27,3 +27,12 @@
 - iframe
 
     javascript:, vbscript:, data: 等都需要过滤
+
+- path
+
+    可在调用外部json数据时，对参数进行严格控制。
+    也可对jsonp接口的callback参数进行更加严格的字符控制，一般的callback，只需要允许，字母，数字+下划线即可。
+
+- 存储型 XSS
+
+    数据库存储之前需要各种过滤

@@ -12,7 +12,7 @@ urlpatterns = patterns('',
     
     # message board injection
     url(r'^board/$', 'message.views.board', name='message_board'),
-
+    url(r'^board/leave-message', 'message.views.leave_message', name='leave_message'),
     # xss html inject test
     url(r'^xss/script/$', 'precaution.views.xss_script' ,name='xss_script_default'),
     url(r'^xss/script/(?P<data>.*)/', 'precaution.views.xss_script' ,name='xss_script'),

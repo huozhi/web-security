@@ -4,6 +4,7 @@
 <head>
 <title>XSS Message Board</title>
 <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
 
 <style type="text/css">
     
@@ -13,6 +14,7 @@
     margin-left: -350px;
     width: 700px;
     resize: none;
+    margin-bottom: 20px;
 }
 .center {
     position: relative;
@@ -39,7 +41,7 @@
 </div>
 <div class="center">
     <textarea class="form-control message-board" rows="5" autofocus wrap="soft"></textarea>
-    <h4><input type="submit" class="btn btn-success" value="submit"></h4>
+    <button id="submit_message" class="btn btn-success col-lg-offset-6" >submit</button>
 </div>
 
 <div class="col-lg-6 col-lg-offset-3">
@@ -54,5 +56,20 @@
     </div>
     {% endfor %}
 </div>
+<script type="text/javascript">
+$(document).ready(function(){
+$('#submit_message').click(function(){
+    var text = $('.message-board').val()
+    $.ajax({
+        url:'/board/leave-message',
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify({'message': text}), 
+        success: function(data) { console.log(data) }
+    })
+})
+})
+</script>
 </body>
 </html>
